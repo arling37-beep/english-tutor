@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tax English Tutor — Chamaca</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0f0e0c;
+  --surface: #1a1916;
+  --surface2: #222018;
+  --border: #2e2c27;
+  --accent: #c9a84c;
+  --accent2: #e8c97a;
+  --text: #f0ece3;
+  --muted: #8a8474;
+  --green: #4caf7d;
+  --red: #e05c5c;
+  --blue: #5c9fe0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* API KEY MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.hidden { display: none; }
+.modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 420px; max-width: 90vw; }
+.modal-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--accent); margin-bottom: 8px; }
+.modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
+.modal-sub a { color: var(--blue); text-decoration: none; }
+.modal-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; margin-bottom: 12px; }
+.modal-input:focus { outline: none; border-color: var(--accent); }
+.modal-row { display: flex; gap: 10px; align-items: center; }
+.modal-note { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+.modal-note b { color: var(--accent); }
+
+/* LAYOUT */
+.shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 2rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.logo { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--accent); line-height: 1.2; }
+.logo span { display: block; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--muted); font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+.ring-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.ring-wrap { position: relative; width: 80px; height: 80px; }
+.ring-wrap svg { transform: rotate(-90deg); }
+.ring-wrap .num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; color: var(--accent); }
+.stats { display: flex; flex-direction: column; gap: 10px; }
+.stat { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.stat-n { font-size: 22px; font-weight: 600; color: var(--accent); }
+.stat-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+.nav { display: flex; flex-direction: column; gap: 4px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 13px; color: var(--muted); cursor: pointer; transition: all 0.15s; border: none; background: none; width: 100%; text-align: left; }
+.nav-item:hover { background: var(--surface2); color: var(--text); }
+.nav-item.active { background: var(--surface2); color: var(--accent); border: 1px solid var(--border); }
+.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.streak { background: linear-gradient(135deg, #2a2010, #1a1a0e); border: 1px solid #3d3010; border-radius: 10px; padding: 12px; }
+.streak-n { font-size: 28px; font-weight: 700; color: var(--accent); }
+.streak-l { font-size: 11px; color: #7a6830; text-transform: uppercase; letter-spacing: 0.06em; }
+.api-status { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); transition: all 0.15s; }
+.api-status:hover { border-color: var(--accent); color: var(--text); }
+.api-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.api-dot.connected { background: var(--green); }
+
+/* MAIN */
+.main { padding: 2rem; overflow-y: auto; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* DASHBOARD */
+.dash-header { margin-bottom: 2rem; }
+.dash-title { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--text); }
+.dash-sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
+.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 2rem; }
+.week-day { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; text-align: center; }
+.week-day.done { border-color: var(--green); background: #0d1f14; }
+.week-day.today { border-color: var(--accent); background: #1f1a0d; }
+.wd-name { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.wd-icon { font-size: 20px; margin: 6px 0; }
+.wd-score { font-size: 12px; font-weight: 600; color: var(--green); }
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+.card-icon { font-size: 24px; margin-bottom: 8px; }
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.card-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.card-action { margin-top: 12px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+.btn-primary { background: var(--accent); color: #0f0e0c; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* LESSON PAGE */
+.lesson-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5rem; }
+.lesson-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500; }
+.tag-gold { background: #2a2010; color: var(--accent); border: 1px solid #3d3010; }
+.tag-blue { background: #0d1a2a; color: var(--blue); border: 1px solid #102040; }
+.tag-green { background: #0d1f14; color: var(--green); border: 1px solid #103020; }
+.lesson-title { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--text); }
+.lesson-body { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; }
+.content-area { display: flex; flex-direction: column; gap: 1rem; }
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+.section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 1rem; font-weight: 600; }
+.vocab-list { display: flex; flex-direction: column; gap: 8px; }
+.vocab-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.15s; }
+.vocab-item:hover { border-color: var(--accent); }
+.vocab-item.learned { border-color: var(--green); }
+.vocab-word { font-size: 14px; font-weight: 600; color: var(--accent); min-width: 160px; }
+.vocab-pron { font-size: 11px; color: var(--blue); margin-top: 2px; }
+.vocab-def { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.vocab-check { margin-left: auto; font-size: 16px; opacity: 0; transition: opacity 0.15s; }
+.vocab-item.learned .vocab-check { opacity: 1; }
+.dialogue-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; font-size: 14px; line-height: 1.8; color: var(--text); }
+.dialogue-box .speaker { font-weight: 600; color: var(--accent); }
+.dialogue-box .client { font-weight: 600; color: var(--blue); }
+
+/* CHAT PANEL */
+.chat-panel { display: flex; flex-direction: column; gap: 1rem; }
+.chat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; height: 340px; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 10px; }
+.cm { display: flex; gap: 8px; align-items: flex-start; }
+.cm.u { flex-direction: row-reverse; }
+.cav { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; background: var(--surface2); border: 1px solid var(--border); }
+.cb { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 9px 13px; font-size: 13px; color: var(--text); line-height: 1.6; max-width: 88%; }
+.cm.u .cb { background: #1f1a0d; border-color: #3d3010; color: var(--accent2); }
+.fb { border-radius: 8px; padding: 8px 12px; font-size: 12px; margin-top: 5px; line-height: 1.5; }
+.fb-fix { background: #1f0d0d; border: 1px solid #3d1010; color: #e08080; }
+.fb-tip { background: #0d1f14; border: 1px solid #103020; color: #80c8a0; }
+.fb b { font-weight: 600; }
+.chat-input-area { display: flex; flex-direction: column; gap: 8px; }
+.chat-input-row { display: flex; gap: 8px; }
+.chat-input-row input { flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; }
+.chat-input-row input:focus { outline: none; border-color: var(--accent); }
+.chat-input-row input::placeholder { color: var(--muted); }
+.mic-wrap { display: flex; gap: 8px; align-items: center; }
+.mic-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.mic-btn:hover { border-color: var(--accent); }
+.mic-btn.on { background: #1f0d0d; border-color: var(--red); animation: pu 1.1s infinite; }
+.speak-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); color: var(--blue); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; margin-top: 4px; }
+.speak-btn:hover { border-color: var(--blue); background: #0d1a2a; }
+.speak-btn.speaking { border-color: var(--blue); background: #0d1a2a; animation: pu 1s infinite; }
+@keyframes pu { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.st-bar { font-size: 11px; color: var(--muted); }
+
+/* VOICE SETTINGS */
+.voice-settings { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.voice-settings label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.voice-settings select { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; cursor: pointer; }
+.voice-settings select:focus { outline: none; border-color: var(--accent); }
+.voice-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.toggle-switch { width: 32px; height: 18px; background: var(--border); border-radius: 9px; position: relative; transition: background 0.2s; }
+.toggle-switch.on { background: var(--green); }
+.toggle-switch::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: left 0.2s; }
+.toggle-switch.on::after { left: 16px; }
+
+/* VOCAB PAGE */
+.vocab-search { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; font-size: 14px; color: var(--text); font-family: 'DM Sans', sans-serif; margin-bottom: 1.5rem; }
+.vocab-search:focus { outline: none; border-color: var(--accent); }
+.vocab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.vcard { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; cursor: pointer; transition: all 0.15s; }
+.vcard:hover { border-color: var(--accent); }
+.vcard.known { border-color: var(--green); }
+.vcard-word { font-size: 15px; font-weight: 600; color: var(--accent); }
+.vcard-pron { font-size: 11px; color: var(--blue); margin: 2px 0; }
+.vcard-cat { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.vcard-def { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+.vcard-ex { font-size: 12px; color: var(--text); margin-top: 6px; font-style: italic; border-left: 2px solid var(--border); padding-left: 8px; }
+
+/* PROGRESS PAGE */
+.prog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 2rem; }
+.prog-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; text-align: center; }
+.prog-n { font-size: 36px; font-weight: 700; color: var(--accent); }
+.prog-l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+.week-table { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.wt-head { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 10px 16px; background: var(--surface2); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.wt-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; padding: 12px 16px; border-top: 1px solid var(--border); font-size: 13px; align-items: center; }
+.wt-row:hover { background: var(--surface2); }
+.score-bar { height: 6px; border-radius: 99px; background: var(--border); overflow: hidden; margin-top: 4px; }
+.score-fill { height: 100%; border-radius: 99px; background: var(--green); }
+
+/* HOMEWORK PAGE */
+.hw-list { display: flex; flex-direction: column; gap: 12px; }
+.hw-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; display: flex; align-items: flex-start; gap: 16px; }
+.hw-item.done { border-color: var(--green); opacity: 0.7; }
+.hw-check { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: 2px; font-size: 14px; transition: all 0.15s; }
+.hw-item.done .hw-check { background: var(--green); border-color: var(--green); }
+.hw-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+.hw-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.hw-due { font-size: 11px; color: var(--accent); margin-top: 6px; }
+
+/* DOTS */
+.dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: bo 1.2s infinite; margin: 0 2px; }
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bo{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+</style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="api-modal">
+  <div class="modal-box">
+    <div class="modal-title">🔑 Connect your API Key</div>
+    <div class="modal-sub">
+      To use the AI tutor with voice, you need an Anthropic API key.<br/>
+      Get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys.
+    </div>
+    <input class="modal-input" type="password" id="api-key-input" placeholder="sk-ant-api03-..." />
+    <div class="modal-row">
+      <button class="btn btn-primary" onclick="saveApiKey()">Connect →</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Skip for now</button>
+    </div>
+    <div class="modal-note"><b>🔒 Privacy:</b> Your key is stored only in your browser (localStorage). It never leaves your device except to call the Anthropic API directly.</div>
+  </div>
+</div>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">Tax English<span>Professional Tutor</span></div>
+
+  <div>
+    <div class="ring-label">Overall Progress</div>
+    <div style="display:flex;align-items:center;gap:16px;margin-top:8px">
+      <div class="ring-wrap">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="#2e2c27" stroke-width="6"/>
+          <circle cx="40" cy="40" r="34" fill="none" stroke="#c9a84c" stroke-width="6" stroke-dasharray="213.6" stroke-dashoffset="192" stroke-linecap="round"/>
+        </svg>
+        <div class="num">5%</div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-n" id="days-count">1</div><div class="stat-l">Days done</div></div>
+        <div class="stat"><div class="stat-n" id="vocab-count">0</div><div class="stat-l">Words learned</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="streak">
+    <div class="streak-n" id="streak-n">🔥 1</div>
+    <div class="streak-l">Day streak</div>
+  </div>
+
+  <nav class="nav">
+    <button class="nav-item active" onclick="goPage('dashboard',this)"><span class="nav-icon">🏠</span> Dashboard</button>
+    <button class="nav-item" onclick="goPage('lesson',this)"><span class="nav-icon">📚</span> Today's Lesson</button>
+    <button class="nav-item" onclick="goPage('vocab',this)"><span class="nav-icon">📖</span> Vocabulary</button>
+    <button class="nav-item" onclick="goPage('progress',this)"><span class="nav-icon">📊</span> Progress</button>
+    <button class="nav-item" onclick="goPage('homework',this)"><span class="nav-icon">✏️</span> Homework</button>
+  </nav>
+
+  <!-- API STATUS -->
+  <div class="api-status" onclick="showModal()" id="api-status-btn">
+    <div class="api-dot" id="api-dot"></div>
+    <span id="api-status-text">No API key — click to connect</span>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page active">
+    <div class="dash-header">
+      <div class="dash-title">Good morning, Chamaca</div>
+      <div class="dash-sub">Week 1 · Intermediate level · Tax & International Legislation</div>
+    </div>
+    <div class="week-grid">
+      <div class="week-day today"><div class="wd-name">Mon</div><div class="wd-icon">📚</div><div class="wd-score">Today</div></div>
+      <div class="week-day"><div class="wd-name">Tue</div><div class="wd-icon">🔒</div><div class="wd-score">—</div></div>
+      <div class="week-day"><div class="wd-name">Wed</div><div class="wd-icon">🔒</div><div class="wd-score">—</div></div>
+      <div class="week-day"><div class="wd-name">Thu</div><div class="wd-icon">🔒</div><div class="wd-score">—</div></div>
+      <div class="week-day"><div class="wd-name">Fri</div><div class="wd-icon">🔒</div><div class="wd-score">—</div></div>
+      <div class="week-day"><div class="wd-name">Sat</div><div class="wd-icon">🔒</div><div class="wd-score">—</div></div>
+      <div class="week-day"><div class="wd-name">Sun</div><div class="wd-icon">🔒</div><div class="wd-score">—</div></div>
+    </div>
+    <div class="cards-grid">
+      <div class="card"><div class="card-icon">📚</div><div class="card-title">Today's Lesson</div><div class="card-desc">Income Tax Deductions — vocabulary, dialogue, and client simulation</div><div class="card-action"><button class="btn btn-primary" onclick="goPage('lesson',document.querySelector('.nav-item:nth-child(2)'))">Start lesson →</button></div></div>
+      <div class="card"><div class="card-icon">📖</div><div class="card-title">Vocabulary Builder</div><div class="card-desc">500+ tax terms in English with pronunciation and examples</div><div class="card-action"><button class="btn btn-ghost" onclick="goPage('vocab',document.querySelector('.nav-item:nth-child(3)'))">Open →</button></div></div>
+      <div class="card"><div class="card-icon">✏️</div><div class="card-title">Homework Due</div><div class="card-desc">3 exercises pending — deductions, VAT terminology, client email</div><div class="card-action"><button class="btn btn-ghost" onclick="goPage('homework',document.querySelector('.nav-item:nth-child(5)'))">View →</button></div></div>
+      <div class="card"><div class="card-icon">🌐</div><div class="card-title">International Tax</div><div class="card-desc">OECD, transfer pricing, double taxation treaties vocabulary</div><div class="card-action"><button class="btn btn-ghost" onclick="goPage('lesson',document.querySelector('.nav-item:nth-child(2)'))">Explore →</button></div></div>
+    </div>
+  </div>
+
+  <!-- LESSON -->
+  <div id="page-lesson" class="page">
+    <div class="lesson-header">
+      <div>
+        <div class="lesson-meta">
+          <span class="tag tag-gold">Day 1</span>
+          <span class="tag tag-blue">Income Tax</span>
+          <span class="tag tag-green">Intermediate</span>
+        </div>
+        <div class="lesson-title">Business Deductions & Allowable Expenses</div>
+      </div>
+    </div>
+    <div class="lesson-body">
+      <div class="content-area">
+        <div class="section">
+          <div class="section-title">Key Vocabulary — click to mark as learned</div>
+          <div class="vocab-list" id="lesson-vocab"></div>
+        </div>
+        <div class="section">
+          <div class="section-title">Sample Dialogue — Client Meeting</div>
+          <div class="dialogue-box">
+            <p><span class="speaker">Tax Advisor:</span> Good morning. I'd like to go over your allowable deductions for this fiscal year.</p><br/>
+            <p><span class="client">Client:</span> Great. What expenses can I actually deduct?</p><br/>
+            <p><span class="speaker">Tax Advisor:</span> Any expense that is <em>ordinary and necessary</em> for your business activity qualifies. This includes operational costs, depreciation of assets, and professional service fees.</p><br/>
+            <p><span class="client">Client:</span> What about my home office?</p><br/>
+            <p><span class="speaker">Tax Advisor:</span> Yes, if the space is used exclusively for business purposes, you may claim a proportional deduction based on square footage.</p>
+          </div>
+        </div>
+      </div>
+      <div class="chat-panel">
+        <div class="section" style="padding:1rem">
+          <div class="section-title">Practice with AI Tutor</div>
+
+          <!-- VOICE SETTINGS -->
+          <div class="voice-settings" style="margin-bottom:10px">
+            <label>Voice</label>
+            <select id="voice-select" onchange="loadVoices()">
+              <option value="">Loading...</option>
+            </select>
+            <div class="voice-toggle" onclick="toggleAutoSpeak()">
+              <div class="toggle-switch" id="auto-speak-toggle"></div>
+              <span>Auto-speak</span>
+            </div>
+          </div>
+
+          <div class="chat-box" id="lesson-chat">
+            <div class="cm">
+              <div class="cav">🎓</div>
+              <div>
+                <div class="cb">Let's practice! Pretend you're advising a US client about deductible business expenses. Explain what qualifies and give two examples. Speak or type in English.</div>
+                <button class="speak-btn" onclick="speakText(this, `Let's practice! Pretend you're advising a US client about deductible business expenses. Explain what qualifies and give two examples. Speak or type in English.`)" title="Listen to this message">🔊</button>
+              </div>
+            </div>
+          </div>
+          <div class="chat-input-area" style="margin-top:10px">
+            <div class="mic-wrap">
+              <button class="mic-btn" id="mic-btn" onclick="togMic()" title="Click to speak">🎤</button>
+              <span class="st-bar" id="st-bar">Click mic or type below</span>
+            </div>
+            <div class="chat-input-row">
+              <input type="text" id="chat-inp" placeholder="Type in English..." onkeydown="if(event.key==='Enter')doSend()"/>
+              <button class="btn btn-primary btn-sm" onclick="doSend()">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOCABULARY -->
+  <div id="page-vocab" class="page">
+    <div class="dash-header"><div class="dash-title">Vocabulary Library</div><div class="dash-sub">500+ tax & accounting terms · click any card to mark as known</div></div>
+    <input class="vocab-search" type="text" placeholder="Search terms..." oninput="filterVocab(this.value)" id="vocab-search"/>
+    <div class="vocab-grid" id="vocab-grid"></div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="page-progress" class="page">
+    <div class="dash-header"><div class="dash-title">Your Progress</div><div class="dash-sub">Track your improvement over time</div></div>
+    <div class="prog-grid">
+      <div class="prog-card"><div class="prog-n">1</div><div class="prog-l">Lessons completed</div></div>
+      <div class="prog-card"><div class="prog-n" id="p-vocab">0</div><div class="prog-l">Words mastered</div></div>
+      <div class="prog-card"><div class="prog-n">🔥1</div><div class="prog-l">Day streak</div></div>
+      <div class="prog-card"><div class="prog-n">0</div><div class="prog-l">Hours practiced</div></div>
+    </div>
+    <div class="week-table">
+      <div class="wt-head"><span>Lesson</span><span>Topic</span><span>Score</span><span>Date</span></div>
+      <div class="wt-row"><span>Day 1</span><span>Deductions</span><div><div class="score-bar"><div class="score-fill" style="width:0%"></div></div><span style="font-size:11px;color:var(--muted)">In progress</span></div><span style="color:var(--muted)">Today</span></div>
+    </div>
+  </div>
+
+  <!-- HOMEWORK -->
+  <div id="page-homework" class="page">
+    <div class="dash-header"><div class="dash-title">Homework</div><div class="dash-sub">Complete these exercises to reinforce today's lesson</div></div>
+    <div class="hw-list">
+      <div class="hw-item" id="hw1">
+        <div class="hw-check" onclick="doneHw('hw1')"></div>
+        <div><div class="hw-title">Write a client email about deductible expenses</div><div class="hw-desc">Draft a professional email (150 words) to a Nicaraguan client explaining which business expenses qualify as deductible under local tax law. Use formal English.</div><div class="hw-due">Due: tomorrow</div></div>
+      </div>
+      <div class="hw-item" id="hw2">
+        <div class="hw-check" onclick="doneHw('hw2')"></div>
+        <div><div class="hw-title">Translate 10 tax terms from Spanish to English</div><div class="hw-desc">Use the vocabulary library to find the English equivalent for: deducción, retención, renta bruta, depreciación, exención, base imponible, contribuyente, ejercicio fiscal, declaración, crédito fiscal.</div><div class="hw-due">Due: tomorrow</div></div>
+      </div>
+      <div class="hw-item" id="hw3">
+        <div class="hw-check" onclick="doneHw('hw3')"></div>
+        <div><div class="hw-title">Practice the client dialogue out loud</div><div class="hw-desc">Read the sample dialogue from today's lesson three times. Record yourself on your phone. Listen back and compare your pronunciation to the phonetic guides in the vocabulary section.</div><div class="hw-due">Due: tomorrow</div></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// API KEY MANAGEMENT
+// ═══════════════════════════════════════════
+let API_KEY = localStorage.getItem('chamaca_api_key') || '';
+
+function showModal() {
+  document.getElementById('api-modal').classList.remove('hidden');
+  document.getElementById('api-key-input').value = API_KEY;
+}
+
+function closeModal() {
+  document.getElementById('api-modal').classList.add('hidden');
+}
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    alert('That doesn\'t look like an Anthropic API key. It should start with sk-ant-');
+    return;
+  }
+  API_KEY = key;
+  localStorage.setItem('chamaca_api_key', key);
+  closeModal();
+  updateApiStatus();
+}
+
+function updateApiStatus() {
+  const dot = document.getElementById('api-dot');
+  const txt = document.getElementById('api-status-text');
+  if (API_KEY) {
+    dot.classList.add('connected');
+    txt.textContent = 'API connected ✓';
+  } else {
+    dot.classList.remove('connected');
+    txt.textContent = 'No API key — click to connect';
+  }
+}
+
+// Show modal on first load if no key
+window.addEventListener('load', () => {
+  updateApiStatus();
+  if (!API_KEY) showModal();
+});
+
+// ═══════════════════════════════════════════
+// VOICE / TTS
+// ═══════════════════════════════════════════
+let voices = [];
+let autoSpeak = localStorage.getItem('chamaca_autospeak') !== 'false';
+let currentUtterance = null;
+
+function loadVoices() {
+  voices = window.speechSynthesis.getVoices();
+  const sel = document.getElementById('voice-select');
+  // Filter to English voices only
+  const en = voices.filter(v => v.lang.startsWith('en'));
+  sel.innerHTML = en.map((v, i) =>
+    `<option value="${v.name}">${v.name.replace('Google ','').replace('Microsoft ','')}</option>`
+  ).join('');
+  // Prefer a US English voice
+  const preferred = en.find(v => v.name.includes('US') || v.lang === 'en-US' && v.name.includes('Female'))
+                 || en.find(v => v.lang === 'en-US')
+                 || en[0];
+  if (preferred) sel.value = preferred.name;
+
+  // Update toggle UI
+  document.getElementById('auto-speak-toggle').classList.toggle('on', autoSpeak);
+}
+
+window.speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function toggleAutoSpeak() {
+  autoSpeak = !autoSpeak;
+  localStorage.setItem('chamaca_autospeak', autoSpeak);
+  document.getElementById('auto-speak-toggle').classList.toggle('on', autoSpeak);
+}
+
+function speakText(btn, text) {
+  // Stop any current speech
+  window.speechSynthesis.cancel();
+
+  if (btn && btn.classList.contains('speaking')) {
+    btn.classList.remove('speaking');
+    btn.textContent = '🔊';
+    return;
+  }
+
+  const utt = new SpeechSynthesisUtterance(text);
+  const selName = document.getElementById('voice-select').value;
+  const v = voices.find(v => v.name === selName);
+  if (v) utt.voice = v;
+  utt.rate = 0.92;
+  utt.pitch = 1;
+  utt.lang = 'en-US';
+
+  if (btn) {
+    btn.classList.add('speaking');
+    btn.textContent = '⏹';
+    utt.onend = () => { btn.classList.remove('speaking'); btn.textContent = '🔊'; };
+    utt.onerror = () => { btn.classList.remove('speaking'); btn.textContent = '🔊'; };
+  }
+
+  window.speechSynthesis.speak(utt);
+  currentUtterance = utt;
+}
+
+// ═══════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════
+function goPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════
+// VOCAB DATA
+// ═══════════════════════════════════════════
+const VOCAB = [
+  {word:'Deduction',pron:'dih-DUK-shun',cat:'Income Tax',def:'An expense subtracted from gross income to reduce taxable income.',ex:'"All ordinary business expenses qualify as deductions."'},
+  {word:'Allowable expense',pron:'uh-LOW-uh-bul ik-SPENS',cat:'Income Tax',def:'A cost recognized by tax law as legitimate and deductible.',ex:'"Professional fees are an allowable expense."'},
+  {word:'Gross income',pron:'GROHS IN-kum',cat:'Income Tax',def:'Total income before any deductions or taxes are applied.',ex:'"Her gross income was $120,000 last year."'},
+  {word:'Net income',pron:'NET IN-kum',cat:'Income Tax',def:'Income remaining after all deductions and taxes.',ex:'"Net income is what the company actually keeps."'},
+  {word:'Taxable income',pron:'TAK-suh-bul IN-kum',cat:'Income Tax',def:'The portion of income subject to taxation.',ex:'"Deductions reduce your taxable income."'},
+  {word:'Depreciation',pron:'dih-pree-shee-AY-shun',cat:'Accounting',def:'The gradual reduction in value of an asset over time.',ex:'"The equipment depreciation was $5,000 this year."'},
+  {word:'Fiscal year',pron:'FIS-kul YEER',cat:'General',def:'A 12-month period used for accounting and tax purposes.',ex:'"Our fiscal year ends on December 31st."'},
+  {word:'Tax liability',pron:'TAK lye-uh-BIL-ih-tee',cat:'Income Tax',def:'The total amount of tax owed to the government.',ex:'"Their tax liability was reduced by the new credits."'},
+  {word:'Tax credit',pron:'TAK KRED-it',cat:'Income Tax',def:'A direct reduction of the tax amount owed.',ex:'"A tax credit is more valuable than a deduction."'},
+  {word:'Withholding',pron:'with-HOLD-ing',cat:'Payroll',def:'Tax deducted from income at the source before payment.',ex:'"The company applies withholding on all salaries."'},
+  {word:'VAT (Value Added Tax)',pron:'VEE-ay-TEE',cat:'Indirect Tax',def:'A consumption tax levied at each stage of production.',ex:'"The invoice must include VAT at 15%."'},
+  {word:'Tax exemption',pron:'TAK ig-ZEMP-shun',cat:'Income Tax',def:'An amount of income excluded from taxation.',ex:'"Non-profit organizations may qualify for tax exemptions."'},
+  {word:'Transfer pricing',pron:'TRANS-fur PRY-sing',cat:'International Tax',def:'Pricing of transactions between related entities in different countries.',ex:'"Transfer pricing must reflect arm\'s length conditions."'},
+  {word:'Double taxation',pron:'DUB-ul tak-SAY-shun',cat:'International Tax',def:'Income taxed by two different countries.',ex:'"The treaty prevents double taxation on dividends."'},
+  {word:'Tax treaty',pron:'TAK TREE-tee',cat:'International Tax',def:'An agreement between countries to avoid double taxation.',ex:'"Nicaragua has signed tax treaties with several nations."'},
+  {word:'Permanent establishment',pron:'PUR-muh-nunt ih-STAB-lish-munt',cat:'International Tax',def:'A fixed place of business through which a company operates.',ex:'"A branch office creates a permanent establishment."'},
+  {word:'OECD guidelines',pron:'OH-EE-SEE-DEE GYDE-lynz',cat:'International Tax',def:'International standards for tax cooperation and transfer pricing.',ex:'"Transfer pricing follows OECD guidelines."'},
+  {word:'Tax base',pron:'TAK BAYS',cat:'General',def:'The total amount of income or assets subject to taxation.',ex:'"Broadening the tax base increases government revenue."'},
+  {word:'Audit',pron:'AW-dit',cat:'Compliance',def:'An official examination of financial accounts by tax authorities.',ex:'"The company was selected for a tax audit."'},
+  {word:'Compliance',pron:'kum-PLY-uns',cat:'Compliance',def:'Adherence to tax laws and regulations.',ex:'"Full compliance requires timely filing of all returns."'},
+  {word:'Tax return',pron:'TAK rih-TURN',cat:'Filing',def:'The official form used to report income and calculate tax owed.',ex:'"You must file your tax return by March 31st."'},
+  {word:'Filing deadline',pron:'FY-ling DED-lyne',cat:'Filing',def:'The final date by which a tax return must be submitted.',ex:'"Missing the filing deadline results in penalties."'},
+  {word:'Penalty',pron:'PEN-ul-tee',cat:'Compliance',def:'A financial charge imposed for violating tax rules.',ex:'"Late payment attracts a penalty of 2% per month."'},
+  {word:'Tax avoidance',pron:'TAK uh-VOID-uns',cat:'Planning',def:'Legal strategies to minimize tax liability.',ex:'"Tax avoidance through deductions is perfectly legal."'},
+  {word:'Tax evasion',pron:'TAK ih-VAY-zhun',cat:'Compliance',def:'Illegal non-payment or underpayment of taxes.',ex:'"Tax evasion is a criminal offense in all jurisdictions."'},
+];
+
+let knownWords = JSON.parse(localStorage.getItem('knownWords') || '[]');
+
+function renderVocab(filter = '') {
+  const grid = document.getElementById('vocab-grid');
+  const filtered = VOCAB.filter(v =>
+    v.word.toLowerCase().includes(filter.toLowerCase()) ||
+    v.cat.toLowerCase().includes(filter.toLowerCase()) ||
+    v.def.toLowerCase().includes(filter.toLowerCase())
+  );
+  grid.innerHTML = filtered.map(v => `
+    <div class="vcard ${knownWords.includes(v.word)?'known':''}" onclick="toggleKnown('${v.word}',this)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="vcard-word">${v.word} ${knownWords.includes(v.word)?'✓':''}</div>
+          <div class="vcard-pron">${v.pron}</div>
+          <div class="vcard-cat">${v.cat}</div>
+        </div>
+      </div>
+      <div class="vcard-def">${v.def}</div>
+      <div class="vcard-ex">${v.ex}</div>
+    </div>
+  `).join('');
+}
+
+function toggleKnown(word, el) {
+  if (knownWords.includes(word)) {
+    knownWords = knownWords.filter(w => w !== word);
+    el.classList.remove('known');
+  } else {
+    knownWords.push(word);
+    el.classList.add('known');
+  }
+  localStorage.setItem('knownWords', JSON.stringify(knownWords));
+  document.getElementById('vocab-count').textContent = knownWords.length;
+  document.getElementById('p-vocab').textContent = knownWords.length;
+}
+
+function filterVocab(v) { renderVocab(v); }
+
+// LESSON VOCAB
+const LESSON_VOCAB = VOCAB.slice(0, 6);
+function renderLessonVocab() {
+  const el = document.getElementById('lesson-vocab');
+  el.innerHTML = LESSON_VOCAB.map(v => `
+    <div class="vocab-item ${knownWords.includes(v.word)?'learned':''}" onclick="markLearned('${v.word}',this)">
+      <div>
+        <div class="vocab-word">${v.word}</div>
+        <div class="vocab-pron">${v.pron}</div>
+        <div class="vocab-def">${v.def}</div>
+      </div>
+      <div class="vocab-check">✓</div>
+    </div>
+  `).join('');
+}
+
+function markLearned(word, el) {
+  el.classList.toggle('learned');
+  if (!knownWords.includes(word)) {
+    knownWords.push(word);
+    localStorage.setItem('knownWords', JSON.stringify(knownWords));
+    document.getElementById('vocab-count').textContent = knownWords.length;
+    document.getElementById('p-vocab').textContent = knownWords.length;
+  }
+}
+
+// HOMEWORK
+function doneHw(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('done');
+  el.querySelector('.hw-check').textContent = el.classList.contains('done') ? '✓' : '';
+}
+
+// ═══════════════════════════════════════════
+// SPEECH RECOGNITION
+// ═══════════════════════════════════════════
+let recog = null, listening = false, thinking = false;
+let history = [];
+
+function initMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { document.getElementById('st-bar').textContent = 'Voice not supported — type instead'; return; }
+  recog = new SR();
+  recog.lang = 'en-US';
+  recog.continuous = false;
+  recog.interimResults = false;
+  recog.onstart = () => setSt('🎙 Listening... speak in English');
+  recog.onresult = (e) => {
+    const t = e.results[0][0].transcript;
+    document.getElementById('chat-inp').value = t;
+    setSt('Heard: "' + t + '"');
+    stopMic(); doSend();
+  };
+  recog.onerror = (e) => {
+    if (e.error === 'not-allowed') setSt('Allow microphone in browser settings');
+    else setSt('Mic error — type instead');
+    stopMic();
+  };
+  recog.onend = () => { if (listening) stopMic(); };
+}
+
+function togMic() {
+  if (thinking) return;
+  if (listening) { stopMic(); return; }
+  if (!recog) initMic();
+  if (!recog) return;
+  listening = true;
+  document.getElementById('mic-btn').classList.add('on');
+  document.getElementById('mic-btn').textContent = '⏹';
+  try { recog.start(); } catch(e) { stopMic(); setSt('Could not start mic'); }
+}
+
+function stopMic() {
+  listening = false;
+  document.getElementById('mic-btn').classList.remove('on');
+  document.getElementById('mic-btn').textContent = '🎤';
+  try { recog && recog.stop(); } catch(e) {}
+}
+
+function setSt(t) { document.getElementById('st-bar').textContent = t; }
+
+// ═══════════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════════
+function doSend() {
+  if (!API_KEY) { showModal(); return; }
+  const inp = document.getElementById('chat-inp');
+  const text = inp.value.trim();
+  if (!text || thinking) return;
+  inp.value = '';
+  addMsg('u', text);
+  history.push({role:'user', content:text});
+  showDots();
+  callAI(text);
+}
+
+function addMsg(type, text, extra='') {
+  const c = document.getElementById('lesson-chat');
+  const el = document.createElement('div');
+  el.className = 'cm' + (type==='u' ? ' u' : '');
+  const av = type==='u' ? '👤' : '🎓';
+  const speakBtn = type !== 'u'
+    ? `<button class="speak-btn" onclick="speakText(this, \`${text.replace(/`/g,"'")}\`)" title="Listen">🔊</button>`
+    : '';
+  el.innerHTML = `<div class="cav">${av}</div><div><div class="cb">${esc(text)}</div>${extra}${speakBtn}</div>`;
+  c.appendChild(el);
+  c.scrollTop = c.scrollHeight;
+  return text;
+}
+
+function showDots() {
+  thinking = true; setSt('Thinking...');
+  const c = document.getElementById('lesson-chat');
+  const el = document.createElement('div');
+  el.className = 'cm'; el.id = 'dots';
+  el.innerHTML = `<div class="cav">🎓</div><div class="cb"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+  c.appendChild(el); c.scrollTop = c.scrollHeight;
+}
+
+function rmDots() { const el=document.getElementById('dots'); if(el) el.remove(); }
+
+function esc(s) { return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+
+const SYSTEM = `You are a professional English tutor specializing in tax and accounting language. The student is Chamaca, a Nicaraguan tax advisor at intermediate level. Her goal: speak professionally with US/UK clients and understand English tax documents.
+
+Topic today: Business Deductions & Allowable Expenses.
+
+Respond ONLY with valid JSON:
+{
+  "reply": "Your conversational response (1-3 sentences, natural English)",
+  "correction": "If grammar/vocabulary error found: corrected version + short explanation. Otherwise null.",
+  "pronunciation_tip": "One phonetic tip for a word they used. Otherwise null.",
+  "follow_up": "One question to continue the conversation"
+}
+
+Be warm and encouraging. Point out errors gently. Give specific pronunciation guidance. Keep it professional and tax-focused. ONLY output valid JSON.`;
+
+async function callAI(text) {
+  try {
+    const msgs = history.slice(0,-1).concat([{role:'user', content:text}]);
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,                    // ← THIS was missing before
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM,
+        messages: msgs
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'API error ' + res.status);
+    }
+
+    const data = await res.json();
+    const raw = (data.content||[]).map(c=>c.text||'').join('');
+    let p;
+    try { p = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+    catch(e) { p = {reply:raw, correction:null, pronunciation_tip:null, follow_up:null}; }
+
+    rmDots();
+    const full = p.follow_up ? p.reply + ' ' + p.follow_up : p.reply;
+    let extra = '';
+    if (p.correction) extra += `<div class="fb fb-fix"><b>✏️ Correction:</b> ${esc(p.correction)}</div>`;
+    if (p.pronunciation_tip) extra += `<div class="fb fb-tip"><b>🔊 Pronunciation:</b> ${esc(p.pronunciation_tip)}</div>`;
+    addMsg('ai', full, extra);
+    history.push({role:'assistant', content:p.reply});
+    thinking = false;
+    setSt('Your turn — speak or type');
+
+    // AUTO-SPEAK the reply if enabled
+    if (autoSpeak) {
+      setTimeout(() => speakText(null, full), 300);
+    }
+
+  } catch(err) {
+    rmDots(); thinking = false;
+    addMsg('ai', '⚠️ Error: ' + err.message + '. Check your API key in the sidebar.');
+    setSt('Error — check API key');
+  }
+}
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+renderVocab();
+renderLessonVocab();
+initMic();
+document.getElementById('vocab-count').textContent = knownWords.length;
+document.getElementById('p-vocab').textContent = knownWords.length;
+</script>
+</body>
+</html>
