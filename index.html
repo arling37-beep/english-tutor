@@ -22,6 +22,19 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
+/* API KEY MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.hidden { display: none; }
+.modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 420px; max-width: 90vw; }
+.modal-title { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--accent); margin-bottom: 8px; }
+.modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.6; }
+.modal-sub a { color: var(--blue); text-decoration: none; }
+.modal-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; font-size: 13px; color: var(--text); font-family: 'DM Sans', sans-serif; margin-bottom: 12px; }
+.modal-input:focus { outline: none; border-color: var(--accent); }
+.modal-row { display: flex; gap: 10px; align-items: center; }
+.modal-note { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+.modal-note b { color: var(--accent); }
+
 /* LAYOUT */
 .shell { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
 
@@ -29,7 +42,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 2rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .logo { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--accent); line-height: 1.2; }
 .logo span { display: block; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--muted); font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
-.progress-ring { display: flex; flex-direction: column; gap: 8px; }
 .ring-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
 .ring-wrap { position: relative; width: 80px; height: 80px; }
 .ring-wrap svg { transform: rotate(-90deg); }
@@ -46,6 +58,10 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .streak { background: linear-gradient(135deg, #2a2010, #1a1a0e); border: 1px solid #3d3010; border-radius: 10px; padding: 12px; }
 .streak-n { font-size: 28px; font-weight: 700; color: var(--accent); }
 .streak-l { font-size: 11px; color: #7a6830; text-transform: uppercase; letter-spacing: 0.06em; }
+.api-status { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); transition: all 0.15s; }
+.api-status:hover { border-color: var(--accent); color: var(--text); }
+.api-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.api-dot.connected { background: var(--green); }
 
 /* MAIN */
 .main { padding: 2rem; overflow-y: auto; }
@@ -77,7 +93,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 
 /* LESSON PAGE */
-.lesson-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: gap; }
+.lesson-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.5rem; }
 .lesson-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
 .tag { font-size: 11px; padding: 3px 10px; border-radius: 99px; font-weight: 500; }
 .tag-gold { background: #2a2010; color: var(--accent); border: 1px solid #3d3010; }
@@ -122,10 +138,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .mic-btn { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
 .mic-btn:hover { border-color: var(--accent); }
 .mic-btn.on { background: #1f0d0d; border-color: var(--red); animation: pu 1.1s infinite; }
+.speak-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface2); color: var(--blue); font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; flex-shrink: 0; margin-top: 4px; }
+.speak-btn:hover { border-color: var(--blue); background: #0d1a2a; }
+.speak-btn.speaking { border-color: var(--blue); background: #0d1a2a; animation: pu 1s infinite; }
 @keyframes pu { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
 .st-bar { font-size: 11px; color: var(--muted); }
 
-/* VOCABULARY PAGE */
+/* VOICE SETTINGS */
+.voice-settings { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.voice-settings label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.voice-settings select { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; cursor: pointer; }
+.voice-settings select:focus { outline: none; border-color: var(--accent); }
+.voice-toggle { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); cursor: pointer; }
+.toggle-switch { width: 32px; height: 18px; background: var(--border); border-radius: 9px; position: relative; transition: background 0.2s; }
+.toggle-switch.on { background: var(--green); }
+.toggle-switch::after { content: ''; position: absolute; width: 14px; height: 14px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: left 0.2s; }
+.toggle-switch.on::after { left: 16px; }
+
+/* VOCAB PAGE */
 .vocab-search { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; font-size: 14px; color: var(--text); font-family: 'DM Sans', sans-serif; margin-bottom: 1.5rem; }
 .vocab-search:focus { outline: none; border-color: var(--accent); }
 .vocab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
@@ -167,6 +197,24 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 </style>
 </head>
 <body>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="api-modal">
+  <div class="modal-box">
+    <div class="modal-title">🔑 Connect your API Key</div>
+    <div class="modal-sub">
+      To use the AI tutor with voice, you need an Anthropic API key.<br/>
+      Get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys.
+    </div>
+    <input class="modal-input" type="password" id="api-key-input" placeholder="sk-ant-api03-..." />
+    <div class="modal-row">
+      <button class="btn btn-primary" onclick="saveApiKey()">Connect →</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Skip for now</button>
+    </div>
+    <div class="modal-note"><b>🔒 Privacy:</b> Your key is stored only in your browser (localStorage). It never leaves your device except to call the Anthropic API directly.</div>
+  </div>
+</div>
+
 <div class="shell">
 
 <!-- SIDEBAR -->
@@ -202,6 +250,12 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <button class="nav-item" onclick="goPage('progress',this)"><span class="nav-icon">📊</span> Progress</button>
     <button class="nav-item" onclick="goPage('homework',this)"><span class="nav-icon">✏️</span> Homework</button>
   </nav>
+
+  <!-- API STATUS -->
+  <div class="api-status" onclick="showModal()" id="api-status-btn">
+    <div class="api-dot" id="api-dot"></div>
+    <span id="api-status-text">No API key — click to connect</span>
+  </div>
 </aside>
 
 <!-- MAIN CONTENT -->
@@ -262,8 +316,27 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
       <div class="chat-panel">
         <div class="section" style="padding:1rem">
           <div class="section-title">Practice with AI Tutor</div>
+
+          <!-- VOICE SETTINGS -->
+          <div class="voice-settings" style="margin-bottom:10px">
+            <label>Voice</label>
+            <select id="voice-select" onchange="loadVoices()">
+              <option value="">Loading...</option>
+            </select>
+            <div class="voice-toggle" onclick="toggleAutoSpeak()">
+              <div class="toggle-switch" id="auto-speak-toggle"></div>
+              <span>Auto-speak</span>
+            </div>
+          </div>
+
           <div class="chat-box" id="lesson-chat">
-            <div class="cm"><div class="cav">🎓</div><div><div class="cb">Let's practice! Pretend you're advising a US client about deductible business expenses. Explain what qualifies and give two examples. Speak or type in English.</div></div></div>
+            <div class="cm">
+              <div class="cav">🎓</div>
+              <div>
+                <div class="cb">Let's practice! Pretend you're advising a US client about deductible business expenses. Explain what qualifies and give two examples. Speak or type in English.</div>
+                <button class="speak-btn" onclick="speakText(this, `Let's practice! Pretend you're advising a US client about deductible business expenses. Explain what qualifies and give two examples. Speak or type in English.`)" title="Listen to this message">🔊</button>
+              </div>
+            </div>
           </div>
           <div class="chat-input-area" style="margin-top:10px">
             <div class="mic-wrap">
@@ -325,15 +398,126 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 </div>
 
 <script>
+// ═══════════════════════════════════════════
+// API KEY MANAGEMENT
+// ═══════════════════════════════════════════
+let API_KEY = localStorage.getItem('chamaca_api_key') || '';
+
+function showModal() {
+  document.getElementById('api-modal').classList.remove('hidden');
+  document.getElementById('api-key-input').value = API_KEY;
+}
+
+function closeModal() {
+  document.getElementById('api-modal').classList.add('hidden');
+}
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    alert('That doesn\'t look like an Anthropic API key. It should start with sk-ant-');
+    return;
+  }
+  API_KEY = key;
+  localStorage.setItem('chamaca_api_key', key);
+  closeModal();
+  updateApiStatus();
+}
+
+function updateApiStatus() {
+  const dot = document.getElementById('api-dot');
+  const txt = document.getElementById('api-status-text');
+  if (API_KEY) {
+    dot.classList.add('connected');
+    txt.textContent = 'API connected ✓';
+  } else {
+    dot.classList.remove('connected');
+    txt.textContent = 'No API key — click to connect';
+  }
+}
+
+// Show modal on first load if no key
+window.addEventListener('load', () => {
+  updateApiStatus();
+  if (!API_KEY) showModal();
+});
+
+// ═══════════════════════════════════════════
+// VOICE / TTS
+// ═══════════════════════════════════════════
+let voices = [];
+let autoSpeak = localStorage.getItem('chamaca_autospeak') !== 'false';
+let currentUtterance = null;
+
+function loadVoices() {
+  voices = window.speechSynthesis.getVoices();
+  const sel = document.getElementById('voice-select');
+  // Filter to English voices only
+  const en = voices.filter(v => v.lang.startsWith('en'));
+  sel.innerHTML = en.map((v, i) =>
+    `<option value="${v.name}">${v.name.replace('Google ','').replace('Microsoft ','')}</option>`
+  ).join('');
+  // Prefer a US English voice
+  const preferred = en.find(v => v.name.includes('US') || v.lang === 'en-US' && v.name.includes('Female'))
+                 || en.find(v => v.lang === 'en-US')
+                 || en[0];
+  if (preferred) sel.value = preferred.name;
+
+  // Update toggle UI
+  document.getElementById('auto-speak-toggle').classList.toggle('on', autoSpeak);
+}
+
+window.speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function toggleAutoSpeak() {
+  autoSpeak = !autoSpeak;
+  localStorage.setItem('chamaca_autospeak', autoSpeak);
+  document.getElementById('auto-speak-toggle').classList.toggle('on', autoSpeak);
+}
+
+function speakText(btn, text) {
+  // Stop any current speech
+  window.speechSynthesis.cancel();
+
+  if (btn && btn.classList.contains('speaking')) {
+    btn.classList.remove('speaking');
+    btn.textContent = '🔊';
+    return;
+  }
+
+  const utt = new SpeechSynthesisUtterance(text);
+  const selName = document.getElementById('voice-select').value;
+  const v = voices.find(v => v.name === selName);
+  if (v) utt.voice = v;
+  utt.rate = 0.92;
+  utt.pitch = 1;
+  utt.lang = 'en-US';
+
+  if (btn) {
+    btn.classList.add('speaking');
+    btn.textContent = '⏹';
+    utt.onend = () => { btn.classList.remove('speaking'); btn.textContent = '🔊'; };
+    utt.onerror = () => { btn.classList.remove('speaking'); btn.textContent = '🔊'; };
+  }
+
+  window.speechSynthesis.speak(utt);
+  currentUtterance = utt;
+}
+
+// ═══════════════════════════════════════════
 // NAV
+// ═══════════════════════════════════════════
 function goPage(id, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  if(btn) btn.classList.add('active');
+  if (btn) btn.classList.add('active');
 }
 
+// ═══════════════════════════════════════════
 // VOCAB DATA
+// ═══════════════════════════════════════════
 const VOCAB = [
   {word:'Deduction',pron:'dih-DUK-shun',cat:'Income Tax',def:'An expense subtracted from gross income to reduce taxable income.',ex:'"All ordinary business expenses qualify as deductions."'},
   {word:'Allowable expense',pron:'uh-LOW-uh-bul ik-SPENS',cat:'Income Tax',def:'A cost recognized by tax law as legitimate and deductible.',ex:'"Professional fees are an allowable expense."'},
@@ -387,7 +571,7 @@ function renderVocab(filter = '') {
 }
 
 function toggleKnown(word, el) {
-  if(knownWords.includes(word)) {
+  if (knownWords.includes(word)) {
     knownWords = knownWords.filter(w => w !== word);
     el.classList.remove('known');
   } else {
@@ -419,7 +603,7 @@ function renderLessonVocab() {
 
 function markLearned(word, el) {
   el.classList.toggle('learned');
-  if(!knownWords.includes(word)) {
+  if (!knownWords.includes(word)) {
     knownWords.push(word);
     localStorage.setItem('knownWords', JSON.stringify(knownWords));
     document.getElementById('vocab-count').textContent = knownWords.length;
@@ -434,13 +618,15 @@ function doneHw(id) {
   el.querySelector('.hw-check').textContent = el.classList.contains('done') ? '✓' : '';
 }
 
-// SPEECH
+// ═══════════════════════════════════════════
+// SPEECH RECOGNITION
+// ═══════════════════════════════════════════
 let recog = null, listening = false, thinking = false;
 let history = [];
 
 function initMic() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR) { document.getElementById('st-bar').textContent = 'Voice not supported — type instead'; return; }
+  if (!SR) { document.getElementById('st-bar').textContent = 'Voice not supported — type instead'; return; }
   recog = new SR();
   recog.lang = 'en-US';
   recog.continuous = false;
@@ -453,18 +639,18 @@ function initMic() {
     stopMic(); doSend();
   };
   recog.onerror = (e) => {
-    if(e.error==='not-allowed') setSt('Allow microphone in browser settings');
+    if (e.error === 'not-allowed') setSt('Allow microphone in browser settings');
     else setSt('Mic error — type instead');
     stopMic();
   };
-  recog.onend = () => { if(listening) stopMic(); };
+  recog.onend = () => { if (listening) stopMic(); };
 }
 
 function togMic() {
-  if(thinking) return;
-  if(listening) { stopMic(); return; }
-  if(!recog) initMic();
-  if(!recog) return;
+  if (thinking) return;
+  if (listening) { stopMic(); return; }
+  if (!recog) initMic();
+  if (!recog) return;
   listening = true;
   document.getElementById('mic-btn').classList.add('on');
   document.getElementById('mic-btn').textContent = '⏹';
@@ -480,10 +666,14 @@ function stopMic() {
 
 function setSt(t) { document.getElementById('st-bar').textContent = t; }
 
+// ═══════════════════════════════════════════
+// CHAT
+// ═══════════════════════════════════════════
 function doSend() {
+  if (!API_KEY) { showModal(); return; }
   const inp = document.getElementById('chat-inp');
   const text = inp.value.trim();
-  if(!text || thinking) return;
+  if (!text || thinking) return;
   inp.value = '';
   addMsg('u', text);
   history.push({role:'user', content:text});
@@ -496,8 +686,13 @@ function addMsg(type, text, extra='') {
   const el = document.createElement('div');
   el.className = 'cm' + (type==='u' ? ' u' : '');
   const av = type==='u' ? '👤' : '🎓';
-  el.innerHTML = `<div class="cav">${av}</div><div><div class="cb">${esc(text)}</div>${extra}</div>`;
-  c.appendChild(el); c.scrollTop = c.scrollHeight;
+  const speakBtn = type !== 'u'
+    ? `<button class="speak-btn" onclick="speakText(this, \`${text.replace(/`/g,"'")}\`)" title="Listen">🔊</button>`
+    : '';
+  el.innerHTML = `<div class="cav">${av}</div><div><div class="cb">${esc(text)}</div>${extra}${speakBtn}</div>`;
+  c.appendChild(el);
+  c.scrollTop = c.scrollHeight;
+  return text;
 }
 
 function showDots() {
@@ -529,33 +724,59 @@ Be warm and encouraging. Point out errors gently. Give specific pronunciation gu
 
 async function callAI(text) {
   try {
-    const msgs = history.slice(0,-1).concat([{role:'user',content:text}]);
+    const msgs = history.slice(0,-1).concat([{role:'user', content:text}]);
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM, messages:msgs })
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,                    // ← THIS was missing before
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM,
+        messages: msgs
+      })
     });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'API error ' + res.status);
+    }
+
     const data = await res.json();
     const raw = (data.content||[]).map(c=>c.text||'').join('');
     let p;
     try { p = JSON.parse(raw.replace(/```json|```/g,'').trim()); }
     catch(e) { p = {reply:raw, correction:null, pronunciation_tip:null, follow_up:null}; }
+
     rmDots();
     const full = p.follow_up ? p.reply + ' ' + p.follow_up : p.reply;
     let extra = '';
-    if(p.correction) extra += `<div class="fb fb-fix"><b>✏️ Correction:</b> ${esc(p.correction)}</div>`;
-    if(p.pronunciation_tip) extra += `<div class="fb fb-tip"><b>🔊 Pronunciation:</b> ${esc(p.pronunciation_tip)}</div>`;
+    if (p.correction) extra += `<div class="fb fb-fix"><b>✏️ Correction:</b> ${esc(p.correction)}</div>`;
+    if (p.pronunciation_tip) extra += `<div class="fb fb-tip"><b>🔊 Pronunciation:</b> ${esc(p.pronunciation_tip)}</div>`;
     addMsg('ai', full, extra);
     history.push({role:'assistant', content:p.reply});
-    thinking = false; setSt('Your turn — speak or type');
+    thinking = false;
+    setSt('Your turn — speak or type');
+
+    // AUTO-SPEAK the reply if enabled
+    if (autoSpeak) {
+      setTimeout(() => speakText(null, full), 300);
+    }
+
   } catch(err) {
     rmDots(); thinking = false;
-    addMsg('ai', 'Connection error. Please check your internet and try again.');
-    setSt('Error — try again');
+    addMsg('ai', '⚠️ Error: ' + err.message + '. Check your API key in the sidebar.');
+    setSt('Error — check API key');
   }
 }
 
+// ═══════════════════════════════════════════
 // INIT
+// ═══════════════════════════════════════════
 renderVocab();
 renderLessonVocab();
 initMic();
