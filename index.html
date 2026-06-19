@@ -487,11 +487,32 @@ async function callAI(mode) {
     }
     history.push({role:'assistant',content:reply});
     thinking=false; setSt('Your turn — speak or type freely');
+    speakOut(reply);
   } catch(err) {
     rmDots(); thinking=false;
     addMsg('ai','Connection error. Check your internet and try again.');
     setSt('Error — try again');
   }
+}
+
+function speakOut(text) {
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const clean = text.replace(/<[^>]*>/g,'');
+  const utt = new SpeechSynthesisUtterance(clean);
+  utt.lang = 'en-US';
+  utt.rate = 0.9;
+  utt.pitch = 1;
+  const loadVoice = () => {
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) ||
+                      voices.find(v => v.lang === 'en-US') ||
+                      voices.find(v => v.lang.startsWith('en'));
+    if(preferred) utt.voice = preferred;
+    window.speechSynthesis.speak(utt);
+  };
+  if(window.speechSynthesis.getVoices().length > 0) { loadVoice(); }
+  else { window.speechSynthesis.onvoiceschanged = loadVoice; }
 }
 
 // VOCAB DATA
