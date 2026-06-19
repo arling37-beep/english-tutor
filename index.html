@@ -21,9 +21,27 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
 
-/* SIDEBAR */
+/* API MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; max-width: 420px; width: 90%; text-align: center; }
+.modal-icon { font-size: 40px; margin-bottom: 1rem; }
+.modal-title { font-family: 'DM Serif Display', serif; font-size: 24px; color: var(--accent); margin-bottom: 0.75rem; }
+.modal-desc { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+.modal-desc a { color: var(--blue); }
+.modal-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; font-size: 14px; color: var(--text); font-family: 'DM Sans', sans-serif; margin-bottom: 1rem; }
+.modal-input:focus { outline: none; border-color: var(--accent); }
+.modal-input::placeholder { color: var(--muted); }
+.modal-btns { display: flex; gap: 10px; justify-content: center; }
+.btn-connect { background: var(--accent); color: #0f0e0c; border: none; border-radius: 10px; padding: 12px 28px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
+.btn-connect:hover { background: var(--accent2); }
+.btn-skip { background: var(--surface2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 12px 28px; font-size: 14px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+.btn-skip:hover { border-color: var(--accent); color: var(--accent); }
+.modal-privacy { font-size: 11px; color: var(--muted); margin-top: 1rem; line-height: 1.6; }
+.modal-error { font-size: 12px; color: var(--red); margin-bottom: 8px; display: none; }
+
+/* MAIN APP */
+.shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
 .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 2rem; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
 .logo { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--accent); line-height: 1.2; }
 .logo span { display: block; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--muted); font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
@@ -38,13 +56,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .streak { background: linear-gradient(135deg, #2a2010, #1a1a0e); border: 1px solid #3d3010; border-radius: 10px; padding: 12px; }
 .streak-n { font-size: 28px; font-weight: 700; color: var(--accent); }
 .streak-l { font-size: 11px; color: #7a6830; text-transform: uppercase; letter-spacing: 0.06em; }
+.api-status { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 12px; display: flex; align-items: center; gap: 8px; }
+.api-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.api-dot.off { background: var(--red); }
+.api-change { font-size: 11px; color: var(--accent); cursor: pointer; margin-top: 4px; }
+.api-change:hover { text-decoration: underline; }
 
-/* MAIN */
 .main { padding: 2rem; overflow-y: auto; }
 .page { display: none; }
 .page.active { display: block; }
-
-/* DASHBOARD */
 .dash-header { margin-bottom: 2rem; }
 .dash-title { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--text); }
 .dash-sub { font-size: 14px; color: var(--muted); margin-top: 4px; }
@@ -61,15 +81,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 
-/* CONVERSATION PAGE */
-.conv-layout { display: grid; grid-template-columns: 1fr 300px; gap: 1.5rem; height: calc(100vh - 120px); }
-.chat-main { display: flex; flex-direction: column; gap: 1rem; }
+/* CONVERSATION */
+.conv-layout { display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; height: calc(100vh - 140px); }
+.chat-main { display: flex; flex-direction: column; gap: 1rem; min-height: 0; }
 .topic-bar { display: flex; gap: 8px; flex-wrap: wrap; }
-.tag { font-size: 11px; padding: 4px 12px; border-radius: 99px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
-.tag-gold { background: #2a2010; color: var(--accent); border: 1px solid #3d3010; }
-.tag-blue { background: #0d1a2a; color: var(--blue); border: 1px solid #102040; }
-.tag-green { background: #0d1f14; color: var(--green); border: 1px solid #103020; }
-.tag-sel { border-width: 2px !important; }
+.tag { font-size: 11px; padding: 4px 12px; border-radius: 99px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; }
+.tag-gold { background: #2a2010; color: var(--accent); border-color: #3d3010; }
+.tag-blue { background: #0d1a2a; color: var(--blue); border-color: #102040; }
+.tag-green { background: #0d1f14; color: var(--green); border-color: #103020; }
+.tag-sel { border-width: 2px !important; filter: brightness(1.2); }
 .chat-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; flex: 1; overflow-y: auto; padding: 1.25rem; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
 .cm { display: flex; gap: 10px; align-items: flex-start; }
 .cm.u { flex-direction: row-reverse; }
@@ -81,8 +101,6 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .fb-tip { background: #0d1f14; border: 1px solid #103020; color: #80c8a0; }
 .fb-vocab { background: #0d1a2a; border: 1px solid #102040; color: #80b8e0; }
 .fb b { font-weight: 600; display: block; margin-bottom: 3px; }
-
-/* INPUT AREA */
 .input-area { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 10px; }
 .input-hint { font-size: 11px; color: var(--muted); line-height: 1.6; }
 .input-hint span { color: var(--accent); font-weight: 500; }
@@ -99,21 +117,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .action-btn { font-size: 12px; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
 .action-btn:hover { border-color: var(--accent); color: var(--accent); }
 .st-bar { font-size: 12px; color: var(--muted); min-height: 16px; }
-
-/* RIGHT PANEL */
 .right-panel { display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; }
 .panel-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; }
 .panel-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; font-weight: 600; }
-.api-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 12px; color: var(--text); font-family: 'DM Sans', sans-serif; margin-top: 4px; }
-.api-input:focus { outline: none; border-color: var(--accent); }
-.api-input::placeholder { color: var(--muted); }
-.vocab-panel { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
-.vp-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
-.vp-word { font-size: 13px; font-weight: 600; color: var(--accent); }
-.vp-pron { font-size: 11px; color: var(--blue); margin: 1px 0; }
-.vp-def { font-size: 12px; color: var(--muted); line-height: 1.4; }
 
-/* VOCAB PAGE */
+/* VOCAB */
 .vocab-search { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; font-size: 14px; color: var(--text); font-family: 'DM Sans', sans-serif; margin-bottom: 1.5rem; }
 .vocab-search:focus { outline: none; border-color: var(--accent); }
 .vocab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
@@ -130,159 +138,203 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 .hw-list { display: flex; flex-direction: column; gap: 12px; }
 .hw-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; display: flex; align-items: flex-start; gap: 16px; }
 .hw-item.done { border-color: var(--green); opacity: 0.7; }
-.hw-check { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: 2px; font-size: 14px; transition: all 0.15s; }
+.hw-check { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-top: 2px; font-size: 14px; }
 .hw-item.done .hw-check { background: var(--green); border-color: var(--green); }
 .hw-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
 .hw-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
 .hw-due { font-size: 11px; color: var(--accent); margin-top: 6px; }
-
-/* DOTS */
 .dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--muted); animation: bo 1.2s infinite; margin: 0 2px; }
 .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
 @keyframes bo{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 </style>
 </head>
 <body>
-<div class="shell">
 
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="logo">Tax English<span>Professional Tutor · Chamaca</span></div>
-  <div class="stats">
-    <div class="stat"><div class="stat-n" id="vocab-count">0</div><div class="stat-l">Words learned</div></div>
-    <div class="stat"><div class="stat-n" id="session-count">0</div><div class="stat-l">Sessions done</div></div>
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-icon">🔑</div>
+    <div class="modal-title">Connect your API Key</div>
+    <div class="modal-desc">
+      To use the AI tutor with voice and conversation, you need an Anthropic API key.<br/>
+      Get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> → API Keys.
+    </div>
+    <div class="modal-error" id="modal-error">Please enter a valid API key (starts with sk-ant-)</div>
+    <input class="modal-input" type="password" id="modal-key" placeholder="sk-ant-api03-..." onkeydown="if(event.key==='Enter')connectKey()"/>
+    <div class="modal-btns">
+      <button class="btn-connect" onclick="connectKey()">Connect →</button>
+      <button class="btn-skip" onclick="skipKey()">Skip for now</button>
+    </div>
+    <div class="modal-privacy">🔒 <strong>Privacy:</strong> Your key is stored only in your browser (localStorage). It never leaves your device except to call the Anthropic API directly.</div>
   </div>
-  <div class="streak"><div class="streak-n">🔥 <span id="streak-n">1</span></div><div class="streak-l">Day streak</div></div>
-  <nav class="nav">
-    <button class="nav-item active" onclick="goPage('dashboard',this)">🏠 Dashboard</button>
-    <button class="nav-item" onclick="goPage('conversation',this)">🎙 Practice</button>
-    <button class="nav-item" onclick="goPage('vocab',this)">📖 Vocabulary</button>
-    <button class="nav-item" onclick="goPage('homework',this)">✏️ Homework</button>
-  </nav>
-</aside>
+</div>
 
-<main class="main">
+<!-- MAIN APP -->
+<div class="shell" id="app" style="display:none">
+  <aside class="sidebar">
+    <div class="logo">Tax English<span>Professional Tutor · Chamaca</span></div>
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="vocab-count">0</div><div class="stat-l">Words learned</div></div>
+      <div class="stat"><div class="stat-n" id="session-count">0</div><div class="stat-l">Sessions done</div></div>
+    </div>
+    <div class="streak"><div class="streak-n">🔥 <span id="streak-n">1</span></div><div class="streak-l">Day streak</div></div>
+    <div>
+      <div class="api-status">
+        <div class="api-dot" id="api-dot"></div>
+        <span id="api-status-text" style="font-size:12px;color:var(--muted)">API Connected</span>
+      </div>
+      <div class="api-change" onclick="changeKey()">Change API key</div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" onclick="goPage('dashboard',this)">🏠 Dashboard</button>
+      <button class="nav-item" onclick="goPage('conversation',this)">🎙 Practice</button>
+      <button class="nav-item" onclick="goPage('vocab',this)">📖 Vocabulary</button>
+      <button class="nav-item" onclick="goPage('homework',this)">✏️ Homework</button>
+    </nav>
+  </aside>
 
-  <!-- DASHBOARD -->
-  <div id="page-dashboard" class="page active">
-    <div class="dash-header">
-      <div class="dash-title">Good morning, Chamaca 👋</div>
-      <div class="dash-sub">Intermediate · Tax & International Legislation · 1 lesson per day</div>
+  <main class="main">
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="dash-header">
+        <div class="dash-title">Good morning, Chamaca 👋</div>
+        <div class="dash-sub">Intermediate · Tax & International Legislation · 1 lesson per day</div>
+      </div>
+      <div class="cards-grid">
+        <div class="card"><div class="card-icon">🎙</div><div class="card-title">Practice Conversation</div><div class="card-desc">Speak with your AI tutor. You lead — the tutor listens and waits for you to ask for feedback.</div><div class="card-action"><button class="btn btn-primary" onclick="goPage('conversation',document.querySelectorAll('.nav-item')[1])">Start →</button></div></div>
+        <div class="card"><div class="card-icon">📖</div><div class="card-title">Vocabulary Library</div><div class="card-desc">25+ tax terms with pronunciation guides and real examples. Click to mark as known.</div><div class="card-action"><button class="btn btn-ghost" onclick="goPage('vocab',document.querySelectorAll('.nav-item')[2])">Open →</button></div></div>
+        <div class="card"><div class="card-icon">✏️</div><div class="card-title">Homework</div><div class="card-desc">Daily exercises to reinforce vocabulary, grammar and pronunciation.</div><div class="card-action"><button class="btn btn-ghost" onclick="goPage('homework',document.querySelectorAll('.nav-item')[3])">View →</button></div></div>
+        <div class="card"><div class="card-icon">🌐</div><div class="card-title">Topics Available</div><div class="card-desc">Income tax · VAT · Withholdings · Transfer pricing · OECD · Double taxation · Compliance</div></div>
+      </div>
     </div>
-    <div class="cards-grid">
-      <div class="card"><div class="card-icon">🎙</div><div class="card-title">Practice Conversation</div><div class="card-desc">Speak with your AI tutor. You lead — the tutor listens and waits for you to ask for feedback.</div><div class="card-action"><button class="btn btn-primary" onclick="goPage('conversation',document.querySelectorAll('.nav-item')[1])">Start →</button></div></div>
-      <div class="card"><div class="card-icon">📖</div><div class="card-title">Vocabulary Library</div><div class="card-desc">500+ tax terms in English with pronunciation guides and real examples.</div><div class="card-action"><button class="btn btn-ghost" onclick="goPage('vocab',document.querySelectorAll('.nav-item')[2])">Open →</button></div></div>
-      <div class="card"><div class="card-icon">✏️</div><div class="card-title">Homework</div><div class="card-desc">Daily exercises to reinforce vocabulary, grammar and pronunciation.</div><div class="card-action"><button class="btn btn-ghost" onclick="goPage('homework',document.querySelectorAll('.nav-item')[3])">View →</button></div></div>
-      <div class="card"><div class="card-icon">🌐</div><div class="card-title">Topics Covered</div><div class="card-desc">Income tax · VAT · Withholdings · Transfer pricing · OECD · Double taxation treaties · Compliance</div></div>
-    </div>
-  </div>
 
-  <!-- CONVERSATION -->
-  <div id="page-conversation" class="page">
-    <div class="dash-header" style="margin-bottom:1rem">
-      <div class="dash-title" style="font-size:24px">Practice Session</div>
-    </div>
-    <div class="conv-layout">
-      <div class="chat-main">
-        <div class="topic-bar" id="topic-bar">
-          <span class="tag tag-gold tag-sel" onclick="setTopic(this,'Income Tax & Deductions')">Income Tax</span>
-          <span class="tag tag-blue" onclick="setTopic(this,'VAT & Indirect Taxes')">VAT</span>
-          <span class="tag tag-green" onclick="setTopic(this,'International Tax & OECD')">International</span>
-          <span class="tag tag-gold" onclick="setTopic(this,'Client Meeting Simulation')">Client Meeting</span>
-          <span class="tag tag-blue" onclick="setTopic(this,'Tax Compliance & Filing')">Compliance</span>
-        </div>
-        <div class="chat-box" id="chat-box">
-          <div class="cm">
-            <div class="cav">🎓</div>
-            <div>
-              <div class="cb">Hello Chamaca! I'm ready to listen. Tell me about today's topic in English — take your time and speak as much as you want. When you're ready for feedback, just click <strong>"Give me feedback"</strong> or type <strong>"feedback"</strong>.</div>
+    <!-- CONVERSATION -->
+    <div id="page-conversation" class="page">
+      <div class="dash-header" style="margin-bottom:1rem">
+        <div class="dash-title" style="font-size:24px">Practice Session 🎙</div>
+      </div>
+      <div class="conv-layout">
+        <div class="chat-main">
+          <div class="topic-bar">
+            <span class="tag tag-gold tag-sel" onclick="setTopic(this,'Income Tax & Deductions')">Income Tax</span>
+            <span class="tag tag-blue" onclick="setTopic(this,'VAT & Indirect Taxes')">VAT</span>
+            <span class="tag tag-green" onclick="setTopic(this,'International Tax & OECD')">International</span>
+            <span class="tag tag-gold" onclick="setTopic(this,'Client Meeting Simulation')">Client Meeting</span>
+            <span class="tag tag-blue" onclick="setTopic(this,'Tax Compliance & Filing')">Compliance</span>
+          </div>
+          <div class="chat-box" id="chat-box">
+            <div class="cm">
+              <div class="cav">🎓</div>
+              <div><div class="cb">Hello Chamaca! I'm ready to listen. Speak freely in English about any tax topic. When you want corrections or feedback, just click one of the buttons below. I won't interrupt you! 👂</div></div>
+            </div>
+          </div>
+          <div class="input-area">
+            <div class="input-hint">💡 Speak or type freely — I only correct when <span>you ask me to</span>. Use the buttons below whenever you want feedback.</div>
+            <div class="mic-row">
+              <button class="mic-btn" id="mic-btn" onclick="togMic()">🎤</button>
+              <div class="st-bar" id="st-bar">Click the mic to speak, or type below</div>
+            </div>
+            <div class="text-row">
+              <input type="text" id="chat-inp" placeholder="Type in English..." onkeydown="if(event.key==='Enter')doSend()"/>
+              <button class="btn btn-primary btn-sm" onclick="doSend()">Send</button>
+            </div>
+            <div class="action-row">
+              <button class="action-btn" onclick="requestFeedback()">✏️ Give me feedback</button>
+              <button class="action-btn" onclick="requestPronunciation()">🔊 Pronunciation tips</button>
+              <button class="action-btn" onclick="requestVocab()">📖 New vocabulary</button>
+              <button class="action-btn" onclick="requestContinue()">▶️ Ask me a question</button>
             </div>
           </div>
         </div>
-        <div class="input-area">
-          <div class="input-hint">
-            💡 Speak freely — the tutor <span>only corrects when you ask</span>. Type <span>"feedback"</span> or click the button below when you want corrections.
+        <div class="right-panel">
+          <div class="panel-box">
+            <div class="panel-title">📌 Current Topic</div>
+            <div id="current-topic" style="font-size:13px;color:var(--accent);font-weight:500">Income Tax & Deductions</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px">Level: Intermediate</div>
           </div>
-          <div class="mic-row">
-            <button class="mic-btn" id="mic-btn" onclick="togMic()" title="Click to speak">🎤</button>
-            <div class="st-bar" id="st-bar">Click the mic to speak, or type below</div>
+          <div class="panel-box">
+            <div class="panel-title">💬 How to use</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.9">
+              1. Pick a topic above<br/>
+              2. Speak or type freely<br/>
+              3. Tutor listens — no interruptions<br/>
+              4. Click <span style="color:var(--accent)">"Give me feedback"</span> when ready<br/>
+              5. Ask for pronunciation or vocabulary anytime
+            </div>
           </div>
-          <div class="text-row">
-            <input type="text" id="chat-inp" placeholder="Type in English..." onkeydown="if(event.key==='Enter')doSend()"/>
-            <button class="btn btn-primary btn-sm" onclick="doSend()">Send</button>
-          </div>
-          <div class="action-row">
-            <button class="action-btn" onclick="requestFeedback()">✏️ Give me feedback</button>
-            <button class="action-btn" onclick="requestPronunciation()">🔊 Pronunciation tips</button>
-            <button class="action-btn" onclick="requestVocab()">📖 Suggest new vocabulary</button>
-            <button class="action-btn" onclick="requestContinue()">▶️ Continue the topic</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- RIGHT PANEL -->
-      <div class="right-panel">
-        <div class="panel-box">
-          <div class="panel-title">🔑 API Key</div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Paste your Anthropic key to activate the tutor</div>
-          <input class="api-input" type="password" id="api-key" placeholder="sk-ant-..."/>
-        </div>
-        <div class="panel-box">
-          <div class="panel-title">📌 Current Topic</div>
-          <div id="current-topic" style="font-size:13px;color:var(--accent);font-weight:500">Income Tax & Deductions</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:6px">Level: Intermediate</div>
-        </div>
-        <div class="panel-box">
-          <div class="panel-title">📖 Words from this session</div>
-          <div class="vocab-panel" id="session-vocab">
-            <div style="font-size:12px;color:var(--muted)">New vocabulary will appear here as you practice.</div>
-          </div>
-        </div>
-        <div class="panel-box">
-          <div class="panel-title">💬 How to use</div>
-          <div style="font-size:12px;color:var(--muted);line-height:1.8">
-            1. Choose a topic above<br/>
-            2. Speak or type freely in English<br/>
-            3. The tutor listens — no interruptions<br/>
-            4. Click <span style="color:var(--accent)">"Give me feedback"</span> when ready<br/>
-            5. Ask for pronunciation or vocabulary anytime
+          <div class="panel-box">
+            <div class="panel-title">📖 Session vocabulary</div>
+            <div id="session-vocab" style="font-size:12px;color:var(--muted)">New words will appear here as you practice.</div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- VOCABULARY -->
-  <div id="page-vocab" class="page">
-    <div class="dash-header"><div class="dash-title">Vocabulary Library</div><div class="dash-sub">Click any card to mark as known</div></div>
-    <input class="vocab-search" type="text" placeholder="Search terms..." oninput="filterVocab(this.value)"/>
-    <div class="vocab-grid" id="vocab-grid"></div>
-  </div>
-
-  <!-- HOMEWORK -->
-  <div id="page-homework" class="page">
-    <div class="dash-header"><div class="dash-title">Homework</div><div class="dash-sub">Daily exercises to reinforce your learning</div></div>
-    <div class="hw-list">
-      <div class="hw-item" id="hw1"><div class="hw-check" onclick="doneHw('hw1')"></div><div><div class="hw-title">Write a client email about deductible expenses</div><div class="hw-desc">Draft a professional email (150 words) to a US client explaining which business expenses qualify as deductible. Use formal English.</div><div class="hw-due">Due: tomorrow</div></div></div>
-      <div class="hw-item" id="hw2"><div class="hw-check" onclick="doneHw('hw2')"></div><div><div class="hw-title">Translate 10 tax terms from Spanish to English</div><div class="hw-desc">Find the English equivalent for: deducción, retención, renta bruta, depreciación, exención, base imponible, contribuyente, ejercicio fiscal, declaración, crédito fiscal.</div><div class="hw-due">Due: tomorrow</div></div></div>
-      <div class="hw-item" id="hw3"><div class="hw-check" onclick="doneHw('hw3')"></div><div><div class="hw-title">Practice explaining transfer pricing in English</div><div class="hw-desc">Record yourself explaining transfer pricing to a client in 60 seconds. Focus on clarity and professional vocabulary.</div><div class="hw-due">Due: tomorrow</div></div></div>
+    <!-- VOCABULARY -->
+    <div id="page-vocab" class="page">
+      <div class="dash-header"><div class="dash-title">Vocabulary Library</div><div class="dash-sub">Click any card to mark as known ✓</div></div>
+      <input class="vocab-search" type="text" placeholder="Search terms..." oninput="filterVocab(this.value)"/>
+      <div class="vocab-grid" id="vocab-grid"></div>
     </div>
-  </div>
 
-</main>
+    <!-- HOMEWORK -->
+    <div id="page-homework" class="page">
+      <div class="dash-header"><div class="dash-title">Homework</div><div class="dash-sub">Daily exercises — click to mark as done</div></div>
+      <div class="hw-list">
+        <div class="hw-item" id="hw1"><div class="hw-check" onclick="doneHw('hw1')"></div><div><div class="hw-title">Write a client email about deductible expenses</div><div class="hw-desc">Draft a professional email (150 words) to a US client explaining which business expenses qualify as deductible. Use formal English.</div><div class="hw-due">Due: tomorrow</div></div></div>
+        <div class="hw-item" id="hw2"><div class="hw-check" onclick="doneHw('hw2')"></div><div><div class="hw-title">Translate 10 tax terms from Spanish to English</div><div class="hw-desc">Find the English equivalent for: deducción, retención, renta bruta, depreciación, exención, base imponible, contribuyente, ejercicio fiscal, declaración, crédito fiscal.</div><div class="hw-due">Due: tomorrow</div></div></div>
+        <div class="hw-item" id="hw3"><div class="hw-check" onclick="doneHw('hw3')"></div><div><div class="hw-title">Practice explaining transfer pricing in English</div><div class="hw-desc">Record yourself explaining transfer pricing to a client in 60 seconds. Focus on clarity and professional vocabulary.</div><div class="hw-due">Due: tomorrow</div></div></div>
+      </div>
+    </div>
+  </main>
 </div>
 
 <script>
-// STATE
+let apiKey = localStorage.getItem('taxtutor_apikey') || '';
 let currentTopic = 'Income Tax & Deductions';
 let history = [];
 let listening = false, thinking = false;
 let recog = null;
 let lastUserMessages = [];
 let knownWords = JSON.parse(localStorage.getItem('knownWords') || '[]');
-let sessionVocabAdded = [];
 
 function esc(s){ return s ? s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+
+// MODAL
+function connectKey() {
+  const k = document.getElementById('modal-key').value.trim();
+  if(!k.startsWith('sk-ant-')) {
+    document.getElementById('modal-error').style.display = 'block';
+    return;
+  }
+  apiKey = k;
+  localStorage.setItem('taxtutor_apikey', k);
+  showApp();
+}
+
+function skipKey() {
+  showApp();
+}
+
+function showApp() {
+  document.getElementById('modal').style.display = 'none';
+  document.getElementById('app').style.display = 'grid';
+  updateApiStatus();
+}
+
+function changeKey() {
+  document.getElementById('modal-key').value = '';
+  document.getElementById('modal-error').style.display = 'none';
+  document.getElementById('modal').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function updateApiStatus() {
+  const dot = document.getElementById('api-dot');
+  const txt = document.getElementById('api-status-text');
+  if(apiKey) { dot.classList.remove('off'); txt.textContent = 'API Connected'; }
+  else { dot.classList.add('off'); txt.textContent = 'No API key'; }
+}
 
 // NAV
 function goPage(id, btn) {
@@ -298,13 +350,13 @@ function setTopic(el, topic) {
   el.classList.add('tag-sel');
   currentTopic = topic;
   document.getElementById('current-topic').textContent = topic;
-  addMsg('ai', `Great — let's talk about <strong>${topic}</strong>. Go ahead, tell me what you know or ask me anything about this topic. I'm listening! 👂`);
+  addMsg('ai', `Great — let's talk about <strong>${topic}</strong>. Go ahead, I'm listening! 👂`);
 }
 
 // SPEECH
 function initMic() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){ document.getElementById('st-bar').textContent = 'Voice not supported — use Chrome'; return; }
+  if(!SR){ setSt('Voice not supported — use Chrome'); return; }
   recog = new SR();
   recog.lang = 'en-US';
   recog.continuous = false;
@@ -315,12 +367,11 @@ function initMic() {
     const conf = Math.round(e.results[0][0].confidence * 100);
     document.getElementById('chat-inp').value = t;
     setSt(`Heard: "${t}" (${conf}% confidence)`);
-    stopMic();
-    doSend();
+    stopMic(); doSend();
   };
   recog.onerror = (e) => {
-    if(e.error === 'not-allowed') setSt('Allow microphone access in your browser settings');
-    else if(e.error === 'no-speech') setSt('No speech detected — try again');
+    if(e.error==='not-allowed') setSt('Allow microphone in browser settings');
+    else if(e.error==='no-speech') setSt('No speech detected — try again');
     else setSt('Mic error: ' + e.error);
     stopMic();
   };
@@ -335,7 +386,7 @@ function togMic() {
   listening = true;
   document.getElementById('mic-btn').classList.add('on');
   document.getElementById('mic-btn').textContent = '⏹';
-  try { recog.start(); } catch(e){ stopMic(); setSt('Could not start mic — try again'); }
+  try { recog.start(); } catch(e){ stopMic(); setSt('Could not start mic'); }
 }
 
 function stopMic() {
@@ -347,7 +398,6 @@ function stopMic() {
 
 function setSt(t){ document.getElementById('st-bar').textContent = t; }
 
-// SEND
 function doSend() {
   const inp = document.getElementById('chat-inp');
   const text = inp.value.trim();
@@ -356,42 +406,22 @@ function doSend() {
   lastUserMessages.push(text);
   addUserMsg(text);
   history.push({role:'user', content:text});
-
-  // Check if user is asking for feedback inline
   const lower = text.toLowerCase();
-  if(lower.includes('feedback') || lower.includes('correct me') || lower.includes('correct my')) {
-    callAI('FEEDBACK_REQUEST');
-  } else {
-    callAI('CONTINUE');
-  }
+  if(lower.includes('feedback') || lower.includes('correct me')) callAI('FEEDBACK_REQUEST');
+  else callAI('CONTINUE');
 }
 
-// ACTION BUTTONS
 function requestFeedback() {
-  if(lastUserMessages.length === 0){
-    addMsg('ai', "You haven't said anything yet! Speak or type first, then I'll give you feedback. 😊");
-    return;
-  }
+  if(lastUserMessages.length === 0){ addMsg('ai', "Say something first and I'll give you feedback! 😊"); return; }
   callAI('FEEDBACK_REQUEST');
 }
-
 function requestPronunciation() {
-  if(lastUserMessages.length === 0){
-    addMsg('ai', "Say something first and I'll give you pronunciation tips! 🔊");
-    return;
-  }
+  if(lastUserMessages.length === 0){ addMsg('ai', "Say something first and I'll give you pronunciation tips! 🔊"); return; }
   callAI('PRONUNCIATION_REQUEST');
 }
+function requestVocab() { callAI('VOCAB_REQUEST'); }
+function requestContinue() { callAI('CONTINUE_TOPIC'); }
 
-function requestVocab() {
-  callAI('VOCAB_REQUEST');
-}
-
-function requestContinue() {
-  callAI('CONTINUE_TOPIC');
-}
-
-// CHAT UI
 function addUserMsg(text) {
   const c = document.getElementById('chat-box');
   const el = document.createElement('div');
@@ -404,8 +434,7 @@ function addMsg(type, html, extra='') {
   const c = document.getElementById('chat-box');
   const el = document.createElement('div');
   el.className = 'cm' + (type==='u' ? ' u' : '');
-  const av = type==='u' ? '👤' : '🎓';
-  el.innerHTML = `<div class="cav">${av}</div><div><div class="cb">${html}</div>${extra}</div>`;
+  el.innerHTML = `<div class="cav">${type==='u'?'👤':'🎓'}</div><div><div class="cb">${html}</div>${extra}</div>`;
   c.appendChild(el); c.scrollTop = c.scrollHeight;
 }
 
@@ -417,108 +446,55 @@ function showDots() {
   el.innerHTML = `<div class="cav">🎓</div><div class="cb"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
   c.appendChild(el); c.scrollTop = c.scrollHeight;
 }
-
 function rmDots(){ const el=document.getElementById('dots'); if(el) el.remove(); }
 
-// AI CALL
 function buildSystem(mode) {
-  const base = `You are an English tutor for Chamaca, a Nicaraguan tax advisor (intermediate level, native Spanish speaker). Her goal: speak professionally with US/UK clients about tax topics.
+  const base = `You are an English tutor for Chamaca, a Nicaraguan tax advisor (intermediate level, native Spanish speaker). Her goal: speak professionally with US/UK clients about tax topics. Current topic: ${currentTopic}.
 
-Current topic: ${currentTopic}
+CRITICAL: You are a LISTENER. Do NOT correct unless asked. Keep responses SHORT (1-2 sentences) unless giving requested feedback. Be warm and encouraging always.`;
 
-CRITICAL RULES:
-- You are a LISTENER first. Do NOT interrupt or correct unless specifically asked.
-- Keep your responses SHORT (1-2 sentences max) unless giving feedback.
-- NEVER give unsolicited corrections or feedback.
-- Be warm and encouraging always.`;
-
-  if(mode === 'CONTINUE') {
-    return base + `\n\nThe student just said something. Respond briefly (1-2 sentences) to keep the conversation going naturally. Ask ONE simple follow-up question. Do NOT correct anything. Do NOT give feedback. Just listen and respond like a conversational partner.`;
-  }
-  if(mode === 'FEEDBACK_REQUEST') {
-    return base + `\n\nThe student is asking for feedback on what they said. Now analyze their recent messages and provide:
-1. Grammar corrections (specific errors and corrections)
-2. Better word choices or phrasing
-3. What they did well
-
-Format your response as plain text paragraphs. Be specific and encouraging. Reference exact phrases they used.`;
-  }
-  if(mode === 'PRONUNCIATION_REQUEST') {
-    return base + `\n\nThe student wants pronunciation tips. Based on words they used recently, give 3-5 specific pronunciation tips. Format:
-- WORD: phonetic spelling (stress pattern) + one tip
-Be specific and practical.`;
-  }
-  if(mode === 'VOCAB_REQUEST') {
-    return base + `\n\nSuggest 4-5 advanced tax/business English vocabulary words relevant to ${currentTopic} that the student should learn. For each word give:
-- Word: definition + phonetic pronunciation + example sentence
-Keep it practical and relevant to their work as a tax advisor.`;
-  }
-  if(mode === 'CONTINUE_TOPIC') {
-    return base + `\n\nAsk the student ONE interesting question about ${currentTopic} to continue the conversation. Keep it relevant to their work as a tax advisor meeting US/UK clients. ONE question only.`;
-  }
+  if(mode==='CONTINUE') return base + '\n\nRespond briefly (1-2 sentences max) to keep conversation going. Ask ONE simple follow-up question. Do NOT correct anything.';
+  if(mode==='FEEDBACK_REQUEST') return base + '\n\nStudent asked for feedback. Analyze their recent messages. Give: 1) specific grammar corrections 2) better phrasing suggestions 3) what they did well. Be specific, reference exact phrases they used. Be encouraging.';
+  if(mode==='PRONUNCIATION_REQUEST') return base + '\n\nGive 3-5 specific pronunciation tips for words they used recently. Format: WORD: phonetic spelling + one practical tip. Be specific.';
+  if(mode==='VOCAB_REQUEST') return base + `\n\nSuggest 4-5 advanced tax/business English words relevant to ${currentTopic}. For each: word + phonetic pronunciation + definition + example sentence. Keep it practical for a tax advisor.`;
+  if(mode==='CONTINUE_TOPIC') return base + `\n\nAsk ONE interesting question about ${currentTopic} relevant to Chamaca's work with US/UK clients. ONE question only.`;
   return base;
 }
 
 async function callAI(mode) {
-  const apiKey = document.getElementById('api-key').value.trim();
-  if(!apiKey){
-    addMsg('ai', 'Please enter your Anthropic API key in the panel on the right to activate the tutor. 🔑');
-    return;
-  }
+  if(!apiKey){ addMsg('ai', 'Please connect your API key first. Click <strong>"Change API key"</strong> in the sidebar. 🔑'); return; }
   showDots();
   try {
-    const msgs = history.slice(-10); // last 10 messages for context
+    const msgs = history.slice(-10);
     const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 800,
-        system: buildSystem(mode),
-        messages: msgs.length > 0 ? msgs : [{role:'user', content:'Hello, I am ready to practice.'}]
-      })
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:800, system:buildSystem(mode), messages: msgs.length>0?msgs:[{role:'user',content:'Hello'}]})
     });
     const data = await res.json();
-    if(data.error){ rmDots(); thinking=false; addMsg('ai', `API error: ${data.error.message}`); return; }
+    if(data.error){ rmDots(); thinking=false; addMsg('ai',`API error: ${esc(data.error.message)}`); return; }
     const reply = (data.content||[]).map(c=>c.text||'').join('').trim();
     rmDots();
-
-    // Format based on mode
-    if(mode === 'FEEDBACK_REQUEST') {
-      addMsg('ai', '', `<div class="fb fb-fix"><b>✏️ Grammar & Expression Feedback</b>${esc(reply)}</div>`);
+    if(mode==='FEEDBACK_REQUEST') {
+      addMsg('ai','',`<div class="fb fb-fix"><b>✏️ Grammar & Expression Feedback</b>${esc(reply)}</div>`);
       lastUserMessages = [];
-    } else if(mode === 'PRONUNCIATION_REQUEST') {
-      addMsg('ai', '', `<div class="fb fb-tip"><b>🔊 Pronunciation Tips</b>${esc(reply)}</div>`);
-    } else if(mode === 'VOCAB_REQUEST') {
-      addMsg('ai', '', `<div class="fb fb-vocab"><b>📖 Vocabulary to Learn</b>${esc(reply)}</div>`);
-      updateSessionVocab(reply);
+    } else if(mode==='PRONUNCIATION_REQUEST') {
+      addMsg('ai','',`<div class="fb fb-tip"><b>🔊 Pronunciation Tips</b>${esc(reply)}</div>`);
+    } else if(mode==='VOCAB_REQUEST') {
+      addMsg('ai','',`<div class="fb fb-vocab"><b>📖 Vocabulary to Learn</b>${esc(reply)}</div>`);
     } else {
       addMsg('ai', esc(reply));
     }
-    history.push({role:'assistant', content:reply});
-    thinking = false;
-    setSt('Your turn — speak or type freely');
+    history.push({role:'assistant',content:reply});
+    thinking=false; setSt('Your turn — speak or type freely');
   } catch(err) {
-    rmDots(); thinking = false;
-    addMsg('ai', 'Connection error. Check your internet and API key.');
+    rmDots(); thinking=false;
+    addMsg('ai','Connection error. Check your internet and try again.');
     setSt('Error — try again');
   }
 }
 
-function updateSessionVocab(text) {
-  const panel = document.getElementById('session-vocab');
-  if(panel.querySelector('.no-vocab')) panel.innerHTML = '';
-  const div = document.createElement('div');
-  div.className = 'vp-item';
-  div.innerHTML = `<div class="vp-def" style="font-size:12px;line-height:1.5">${esc(text.substring(0,200))}...</div>`;
-  panel.appendChild(div);
-}
-
-// VOCAB
+// VOCAB DATA
 const VOCAB = [
   {word:'Deduction',pron:'dih-DUK-shun',cat:'Income Tax',def:'An expense subtracted from gross income to reduce taxable income.',ex:'"All ordinary business expenses qualify as deductions."'},
   {word:'Allowable expense',pron:'uh-LOW-uh-bul ik-SPENS',cat:'Income Tax',def:'A cost recognized by tax law as legitimate and deductible.',ex:'"Professional fees are an allowable expense."'},
@@ -549,11 +525,7 @@ const VOCAB = [
 
 function renderVocab(filter='') {
   const grid = document.getElementById('vocab-grid');
-  const filtered = VOCAB.filter(v =>
-    v.word.toLowerCase().includes(filter.toLowerCase()) ||
-    v.cat.toLowerCase().includes(filter.toLowerCase()) ||
-    v.def.toLowerCase().includes(filter.toLowerCase())
-  );
+  const filtered = VOCAB.filter(v => v.word.toLowerCase().includes(filter.toLowerCase()) || v.cat.toLowerCase().includes(filter.toLowerCase()) || v.def.toLowerCase().includes(filter.toLowerCase()));
   grid.innerHTML = filtered.map(v => `
     <div class="vcard ${knownWords.includes(v.word)?'known':''}" onclick="toggleKnown('${v.word}',this)">
       <div class="vcard-word">${v.word} ${knownWords.includes(v.word)?'✓':''}</div>
@@ -561,26 +533,21 @@ function renderVocab(filter='') {
       <div class="vcard-cat">${v.cat}</div>
       <div class="vcard-def">${v.def}</div>
       <div class="vcard-ex">${v.ex}</div>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
 function toggleKnown(word, el) {
-  if(knownWords.includes(word)) { knownWords = knownWords.filter(w=>w!==word); el.classList.remove('known'); }
-  else { knownWords.push(word); el.classList.add('known'); }
+  if(knownWords.includes(word)){ knownWords=knownWords.filter(w=>w!==word); el.classList.remove('known'); }
+  else{ knownWords.push(word); el.classList.add('known'); }
   localStorage.setItem('knownWords', JSON.stringify(knownWords));
   document.getElementById('vocab-count').textContent = knownWords.length;
 }
 
 function filterVocab(v){ renderVocab(v); }
-
-function doneHw(id) {
-  const el = document.getElementById(id);
-  el.classList.toggle('done');
-  el.querySelector('.hw-check').textContent = el.classList.contains('done') ? '✓' : '';
-}
+function doneHw(id){ const el=document.getElementById(id); el.classList.toggle('done'); el.querySelector('.hw-check').textContent=el.classList.contains('done')?'✓':''; }
 
 // INIT
+if(apiKey) { showApp(); } else { document.getElementById('modal').style.display='flex'; }
 renderVocab();
 initMic();
 document.getElementById('vocab-count').textContent = knownWords.length;
